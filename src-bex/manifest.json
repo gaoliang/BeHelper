@@ -1,5 +1,5 @@
 {
-  "name": "quasar-browser-extension",
+  "name": "Be Helper",
   "description": "A Quasar web extension",
   "version": "1.0.0",
   "manifest_version": 2,
@@ -11,6 +11,7 @@
   "browser_action": {
     "default_title": "quasar-browser-extension"
   },
+  "omnibox": { "keyword" : "b" },
   "background": {
     "scripts": [
       "www/bex-background.js",

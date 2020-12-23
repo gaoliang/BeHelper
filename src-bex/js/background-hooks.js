@@ -2,8 +2,9 @@
 // Note: Events sent from this background script using `bridge.send` can be `listen`'d for by all client BEX bridges for this BEX
 
 // More info: https://quasar.dev/quasar-cli/developing-browser-extensions/background-hooks
+import {Base64} from 'js-base64';
 
-export default function attachBackgroundHooks (bridge /* , allActiveConnections */) {
+export default function attachBackgroundHooks(bridge /* , allActiveConnections */) {
   bridge.on('storage.get', event => {
     const payload = event.data
     if (payload.key === null) {
@@ -25,7 +26,7 @@ export default function attachBackgroundHooks (bridge /* , allActiveConnections 
 
   bridge.on('storage.set', event => {
     const payload = event.data
-    chrome.storage.local.set({ [payload.key]: payload.data }, () => {
+    chrome.storage.local.set({[payload.key]: payload.data}, () => {
       bridge.send(event.eventResponseKey, payload.data)
     })
   })
@@ -57,3 +58,38 @@ export default function attachBackgroundHooks (bridge /* , allActiveConnections 
   })
    */
 }
+
+
+function copyToClip(content, message) {
+  var aux = document.createElement("input");
+  aux.setAttribute("value", content);
+  document.body.appendChild(aux);
+  aux.select();
+  document.execCommand("copy");
+  document.body.removeChild(aux);
+  if (message == null) {
+    alert("copied!");
+  } else {
+    alert(message);
+  }
+}
+
+
+chrome.omnibox.onInputChanged.addListener((text, suggest) => {
+    console.log('inputChanged: ' + text);
+    if (!text) return;
+    suggest([
+      {content: JSON.stringify(text), description: `加双引号: <match>${JSON.stringify(text)}</match>`},
+      {content: Base64.encode(text), description: `Base64: <match> ${Base64.encode(text)} </match>`},
+      {content: encodeURIComponent(text), description: `URL Encode: <match>${encodeURIComponent(text)}</match>`},
+    ]);
+  }
+);
+
+
+// This event is fired with the user accepts the input in the omnibox.
+chrome.omnibox.onInputEntered.addListener(
+  function (text) {
+    copyToClip(text, "copied！" + text)
+  });
+
